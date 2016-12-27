@@ -15,13 +15,13 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     var previewLayer: AVCaptureVideoPreviewLayer!
     var faceRectCALayer: CALayer!
     
-    private var currentCameraFace: AVCaptureDevice?
-    private var sessionQueue: dispatch_queue_t = dispatch_queue_create("videoQueue", DISPATCH_QUEUE_SERIAL)
+    fileprivate var currentCameraFace: AVCaptureDevice?
+    fileprivate var sessionQueue: DispatchQueue = DispatchQueue(label: "videoQueue", attributes: [])
     
-    private var session: AVCaptureSession!
-    private var backCameraDevice: AVCaptureDevice?
-    private var frontCameraDevice: AVCaptureDevice?
-    private var metadataOutput: AVCaptureMetadataOutput!
+    fileprivate var session: AVCaptureSession!
+    fileprivate var backCameraDevice: AVCaptureDevice?
+    fileprivate var frontCameraDevice: AVCaptureDevice?
+    fileprivate var metadataOutput: AVCaptureMetadataOutput!
 
     
     
@@ -47,11 +47,11 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         session = AVCaptureSession()
         session.sessionPreset = AVCaptureSessionPresetHigh
         
-        let avaliableCameraDevices = AVCaptureDevice.devicesWithMediaType(AVMediaTypeVideo)
+        let avaliableCameraDevices = AVCaptureDevice.devices(withMediaType: AVMediaTypeVideo)
         for device in avaliableCameraDevices as! [AVCaptureDevice]{
-            if device.position == .Back {
+            if device.position == .back {
                 backCameraDevice = device
-            } else if device.position == .Front{
+            } else if device.position == .front{
                 frontCameraDevice = device
             }
         }
@@ -88,7 +88,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     
     
     func startSession() {
-        if !session.running{
+        if !session.isRunning{
             session.startRunning()
         }
     }
@@ -96,22 +96,22 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     func setupFace(){
         faceRectCALayer = CALayer()
         faceRectCALayer.zPosition = 1
-        faceRectCALayer.borderColor = UIColor.redColor().CGColor
+        faceRectCALayer.borderColor = UIColor.red.cgColor
         faceRectCALayer.borderWidth = 3.0
 
         previewLayer.addSublayer(faceRectCALayer)
     }
     
     
-    func captureOutput(captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [AnyObject]!, fromConnection connection: AVCaptureConnection!) {
+    func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
         
         var faces = [CGRect]()
         
         for metadataObject in metadataObjects as! [AVMetadataObject] {
             if metadataObject.type == AVMetadataObjectTypeFace {
-                    let transformedMetadataObject = previewLayer.transformedMetadataObjectForMetadataObject(metadataObject)
-                    let face = transformedMetadataObject.bounds
-                    faces.append(face)
+                    let transformedMetadataObject = previewLayer.transformedMetadataObject(for: metadataObject)
+                    let face = transformedMetadataObject?.bounds
+                    faces.append(face!)
             }
         }
         
@@ -119,7 +119,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         
         if faces.count > 0 {
             setlayerHidden(false)
-            dispatch_async(dispatch_get_main_queue(), {
+            DispatchQueue.main.async(execute: {
                 () -> Void in
                 self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
             })
@@ -128,17 +128,17 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         }
     }
     
-    func setlayerHidden(hidden: Bool) {
-        if (faceRectCALayer.hidden != hidden){
+    func setlayerHidden(_ hidden: Bool) {
+        if (faceRectCALayer.isHidden != hidden){
             print("hidden:" ,hidden)
-            dispatch_async(dispatch_get_main_queue(), { 
+            DispatchQueue.main.async(execute: { 
                 () -> Void in
-                self.faceRectCALayer.hidden = hidden
+                self.faceRectCALayer.isHidden = hidden
             })
         }
     }
     
-    func findMaxFaceRect(faces : Array<CGRect>) -> CGRect {
+    func findMaxFaceRect(_ faces : Array<CGRect>) -> CGRect {
         if (faces.count == 1) {
             return faces[0]
         }
