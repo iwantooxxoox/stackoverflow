@@ -83,6 +83,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.frame = view.bounds
         previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+//        previewLayer.zPosition = 1
         view.layer.addSublayer(previewLayer)
     }
     
@@ -99,9 +100,26 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         faceRectCALayer.borderColor = UIColor.red.cgColor
         faceRectCALayer.borderWidth = 3.0
 
-        previewLayer.addSublayer(faceRectCALayer)
+//        previewLayer.addSublayer(faceRectCALayer)
     }
     
+    func mySetupFace(_ faces : Array<CGRect>) {
+        previewLayer.sublayers = nil
+        previewLayer.sublayers?.forEach {
+            $0.removeFromSuperlayer()
+        }
+        
+        for face in faces {
+            let faceRect = CALayer()
+            faceRect.zPosition = 1
+            faceRect.borderColor = UIColor.red.cgColor
+            faceRect.borderWidth = 3.0
+            faceRect.frame = face
+            faceRect.backgroundColor = UIColor(white: 1, alpha: 0.5).cgColor
+            previewLayer.addSublayer(faceRect)
+        }
+        
+    }
     
     func captureOutput(_ captureOutput: AVCaptureOutput!, didOutputMetadataObjects metadataObjects: [Any]!, from connection: AVCaptureConnection!) {
         
@@ -118,13 +136,15 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         print("FACE",faces)
         
         if faces.count > 0 {
-            setlayerHidden(false)
+//            setlayerHidden(false)
             DispatchQueue.main.async(execute: {
                 () -> Void in
-                self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
+                self.mySetupFace(faces)
+//                self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
             })
         } else {
-            setlayerHidden(true)
+//            previewLayer.sublayers = nil;
+//            setlayerHidden(true)
         }
     }
     
