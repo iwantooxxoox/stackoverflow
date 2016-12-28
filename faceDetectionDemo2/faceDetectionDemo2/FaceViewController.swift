@@ -85,6 +85,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
 //        previewLayer.zPosition = 1
         view.layer.addSublayer(previewLayer)
+        
     }
     
     
@@ -99,23 +100,31 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         faceRectCALayer.zPosition = 1
         faceRectCALayer.borderColor = UIColor.red.cgColor
         faceRectCALayer.borderWidth = 3.0
-
+        print("previewLayer.sublayers:%@",previewLayer.sublayers!)
 //        previewLayer.addSublayer(faceRectCALayer)
     }
     
     func mySetupFace(_ faces : Array<CGRect>) {
-        previewLayer.sublayers = nil
-        previewLayer.sublayers?.forEach {
-            $0.removeFromSuperlayer()
+//        previewLayer.sublayers = nil
+//        previewLayer.sublayers?.forEach {
+//            $0.removeFromSuperlayer()
+//        }
+//        print("\n")
+//        print(previewLayer.sublayers?.count)
+        for (idx, e) in (previewLayer.sublayers?.enumerated())! {
+            if (idx > 0) {
+                e.removeFromSuperlayer();
+            }
         }
         
+//        print("2 previewLayer.sublayers:%@",previewLayer.sublayers!)
         for face in faces {
             let faceRect = CALayer()
             faceRect.zPosition = 1
             faceRect.borderColor = UIColor.red.cgColor
             faceRect.borderWidth = 3.0
             faceRect.frame = face
-            faceRect.backgroundColor = UIColor(white: 1, alpha: 0.5).cgColor
+//            faceRect.backgroundColor = UIColor(white: 1, alpha: 0.5).cgColor
             previewLayer.addSublayer(faceRect)
         }
         
@@ -143,6 +152,14 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
 //                self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
             })
         } else {
+            DispatchQueue.main.async(execute: {
+                () -> Void in
+                for (idx, e) in (self.previewLayer.sublayers?.enumerated())! {
+                    if (idx > 0) {
+                        e.removeFromSuperlayer();
+                    }
+                }
+            })
 //            previewLayer.sublayers = nil;
 //            setlayerHidden(true)
         }
