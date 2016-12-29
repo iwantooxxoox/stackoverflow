@@ -28,6 +28,11 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(FaceViewController.pinch))
+        view.isUserInteractionEnabled = true
+        view.isMultipleTouchEnabled = true
+        view.addGestureRecognizer(pinchGestureRecognizer)
+        
         setupSession()
         setupPreview()
         setupFace()
@@ -40,6 +45,15 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         // Dispose of any resources that can be recreated.
     }
     
+    // Mark: - Setup pinch gesture recognizer
+    
+    func pinch(gestureRecognizer: UIPinchGestureRecognizer) {
+        print("pinch")
+        if gestureRecognizer.state == UIGestureRecognizerState.began || gestureRecognizer.state == UIGestureRecognizerState.changed {
+            self.view.transform = self.view.transform.scaledBy(x: gestureRecognizer.scale, y: gestureRecognizer.scale)
+            gestureRecognizer.scale = 1
+        }
+    }
     
     // MARK: - Setup session and preview
     
@@ -83,6 +97,8 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         previewLayer = AVCaptureVideoPreviewLayer(session: session)
         previewLayer.frame = view.bounds
         previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
+        previewLayer.affineTransform()
+        
 //        previewLayer.zPosition = 1
         view.layer.addSublayer(previewLayer)
         
