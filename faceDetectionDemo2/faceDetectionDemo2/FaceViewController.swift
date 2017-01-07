@@ -29,8 +29,6 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         super.viewDidLoad()
         
         let pinchGestureRecognizer = UIPinchGestureRecognizer(target: self, action: #selector(FaceViewController.pinch))
-        view.isUserInteractionEnabled = true
-        view.isMultipleTouchEnabled = true
         view.addGestureRecognizer(pinchGestureRecognizer)
         
         setupSession()
@@ -46,13 +44,62 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     }
     
     // Mark: - Setup pinch gesture recognizer
+    // Reference: http://stackoverflow.com/questions/33180564/pinch-to-zoom-camera
     
     func pinch(gestureRecognizer: UIPinchGestureRecognizer) {
         print("pinch")
-        if gestureRecognizer.state == UIGestureRecognizerState.began || gestureRecognizer.state == UIGestureRecognizerState.changed {
-            self.view.transform = self.view.transform.scaledBy(x: gestureRecognizer.scale, y: gestureRecognizer.scale)
-            gestureRecognizer.scale = 1
+
+        var device: AVCaptureDevice = self.backCameraDevice!
+        var vZoomFactor = gestureRecognizer.scale
+        var error:NSError!
+        do{
+            try device.lockForConfiguration()
+            defer {device.unlockForConfiguration()}
+            if (vZoomFactor <= device.activeFormat.videoMaxZoomFactor) {
+//                let desiredZoomFactor:CGFloat = vZoomFactor + atan2(gestureRecognizer.velocity, 5.0)
+//                device.videoZoomFactor = vZoomFactor
+                device.videoZoomFactor = max(1.0, min(vZoomFactor, device.activeFormat.videoMaxZoomFactor))
+                print("zoom factor", device.videoZoomFactor)
+            }
+            else {
+                
+                NSLog("Unable to set videoZoom: (max %f, asked %f)", device.activeFormat.videoMaxZoomFactor, vZoomFactor)
+            }
         }
+        catch error as NSError{
+            
+            NSLog("Unable to set videoZoom: %@", error.localizedDescription)
+        }
+        catch _{
+            
+        }
+        
+        
+//        var device = self.backCameraDevice
+//        var vZoomFactor = gestureRecognizer.scale
+//        var error:NSError!
+//        do{
+//            try device?.lockForConfiguration()
+//            defer {device?.unlockForConfiguration()}
+//            if (vZoomFactor <= (device?.activeFormat.videoMaxZoomFactor)!){
+//                device?.videoZoomFactor = vZoomFactor
+//            }else{
+//                print("Unable to set videoZoom: (max %f, asked %f)", device?.activeFormat.videoMaxZoomFactor, vZoomFactor);
+//            }
+//        }catch error as NSError{
+//            NSLog("Unable to set videoZoom: %@", error.localizedDescription);
+//        }catch _{
+//            
+//        }
+        
+        
+//        if gestureRecognizer.state == UIGestureRecognizerState.began || gestureRecognizer.state == UIGestureRecognizerState.changed {
+//            print(gestureRecognizer.scale)
+//            let newScale = gestureRecognizer.scale
+//            self.view.transform = self.view.transform.scaledBy(x: newScale, y: newScale)
+//            
+//            gestureRecognizer.scale = 1
+//        }
     }
     
     // MARK: - Setup session and preview
@@ -133,14 +180,12 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
             }
         }
         
-//        print("2 previewLayer.sublayers:%@",previewLayer.sublayers!)
         for face in faces {
             let faceRect = CALayer()
             faceRect.zPosition = 1
             faceRect.borderColor = UIColor.red.cgColor
             faceRect.borderWidth = 3.0
             faceRect.frame = face
-//            faceRect.backgroundColor = UIColor(white: 1, alpha: 0.5).cgColor
             previewLayer.addSublayer(faceRect)
         }
         
