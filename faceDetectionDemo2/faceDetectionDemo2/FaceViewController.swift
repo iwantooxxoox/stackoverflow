@@ -10,10 +10,9 @@ import UIKit
 import AVFoundation
 
 class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegate {
-    
-    
     var previewLayer: AVCaptureVideoPreviewLayer!
     var faceRectCALayer: CALayer!
+    var isBackCamera = true
     
     fileprivate var currentCameraFace: AVCaptureDevice?
     fileprivate var sessionQueue: DispatchQueue = DispatchQueue(label: "videoQueue", attributes: [])
@@ -21,10 +20,15 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     fileprivate var session: AVCaptureSession!
     fileprivate var backCameraDevice: AVCaptureDevice?
     fileprivate var frontCameraDevice: AVCaptureDevice?
+    fileprivate var cameraDevice: AVCaptureDevice?
     fileprivate var metadataOutput: AVCaptureMetadataOutput!
+    fileprivate var input: AVCaptureDeviceInput!
+    
+    @IBAction func cameraSwitcher(_ sender: UIButton) {
+        print("camera device change", self.isBackCamera)
+        changeInputDevice()
+    }
 
-    
-    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -56,8 +60,6 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
             try device.lockForConfiguration()
             defer {device.unlockForConfiguration()}
             if (vZoomFactor <= device.activeFormat.videoMaxZoomFactor) {
-//                let desiredZoomFactor:CGFloat = vZoomFactor + atan2(gestureRecognizer.velocity, 5.0)
-//                device.videoZoomFactor = vZoomFactor
                 device.videoZoomFactor = max(1.0, min(vZoomFactor, device.activeFormat.videoMaxZoomFactor))
                 print("zoom factor", device.videoZoomFactor)
             }
@@ -118,7 +120,12 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         }
         
         do {
-            let input = try AVCaptureDeviceInput(device: backCameraDevice)
+            if self.isBackCamera {
+                cameraDevice = backCameraDevice
+            } else {
+                cameraDevice = frontCameraDevice
+            }
+            self.input = try AVCaptureDeviceInput(device: cameraDevice)
             if session.canAddInput(input){
                 session.addInput(input)
             }
@@ -146,8 +153,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         previewLayer.videoGravity = AVLayerVideoGravityResizeAspectFill
         previewLayer.affineTransform()
         
-//        previewLayer.zPosition = 1
-        view.layer.addSublayer(previewLayer)
+        view.layer.insertSublayer(previewLayer, at: 0)
         
     }
     
@@ -155,6 +161,29 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     func startSession() {
         if !session.isRunning{
             session.startRunning()
+        }
+    }
+    
+    func changeInputDevice() {
+        /* Remove face bounds first */
+        for (idx, e) in (previewLayer.sublayers?.enumerated())! {
+            if (idx > 0) {
+                e.removeFromSuperlayer();
+            }
+        }
+        
+        /* Remove oldInput and add new inputDevice */
+        do {
+            session.removeInput(input)
+            input = try AVCaptureDeviceInput(device: isBackCamera ? frontCameraDevice : backCameraDevice)
+            if session.canAddInput(input){
+                session.addInput(input)
+                self.isBackCamera = !self.isBackCamera
+            }
+            
+        } catch {
+            print("Error handling the camera Input: \(error)")
+            return
         }
     }
     
