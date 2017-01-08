@@ -25,10 +25,9 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     fileprivate var input: AVCaptureDeviceInput!
     
     @IBAction func cameraSwitcher(_ sender: UIButton) {
-        print("camera device change", self.isBackCamera)
         changeInputDevice()
     }
-
+    
     override func viewDidLoad() {
         super.viewDidLoad()
         
@@ -39,9 +38,9 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         setupPreview()
         setupFace()
         startSession()
-
+        
     }
-
+    
     override func didReceiveMemoryWarning() {
         super.didReceiveMemoryWarning()
         // Dispose of any resources that can be recreated.
@@ -52,7 +51,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
     
     func pinch(gestureRecognizer: UIPinchGestureRecognizer) {
         print("pinch")
-
+        
         var device: AVCaptureDevice = self.backCameraDevice!
         var vZoomFactor = gestureRecognizer.scale
         var error:NSError!
@@ -75,33 +74,6 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         catch _{
             
         }
-        
-        
-//        var device = self.backCameraDevice
-//        var vZoomFactor = gestureRecognizer.scale
-//        var error:NSError!
-//        do{
-//            try device?.lockForConfiguration()
-//            defer {device?.unlockForConfiguration()}
-//            if (vZoomFactor <= (device?.activeFormat.videoMaxZoomFactor)!){
-//                device?.videoZoomFactor = vZoomFactor
-//            }else{
-//                print("Unable to set videoZoom: (max %f, asked %f)", device?.activeFormat.videoMaxZoomFactor, vZoomFactor);
-//            }
-//        }catch error as NSError{
-//            NSLog("Unable to set videoZoom: %@", error.localizedDescription);
-//        }catch _{
-//            
-//        }
-        
-        
-//        if gestureRecognizer.state == UIGestureRecognizerState.began || gestureRecognizer.state == UIGestureRecognizerState.changed {
-//            print(gestureRecognizer.scale)
-//            let newScale = gestureRecognizer.scale
-//            self.view.transform = self.view.transform.scaledBy(x: newScale, y: newScale)
-//            
-//            gestureRecognizer.scale = 1
-//        }
     }
     
     // MARK: - Setup session and preview
@@ -135,7 +107,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         }
         
         let metadataOutput = AVCaptureMetadataOutput()
-
+        
         if session.canAddOutput(metadataOutput) {
             session.addOutput(metadataOutput)
             
@@ -143,7 +115,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
             metadataOutput.metadataObjectTypes = [AVMetadataObjectTypeFace]
         }
         
-
+        
     }
     
     
@@ -192,17 +164,15 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         faceRectCALayer.zPosition = 1
         faceRectCALayer.borderColor = UIColor.red.cgColor
         faceRectCALayer.borderWidth = 3.0
-        print("previewLayer.sublayers:%@",previewLayer.sublayers!)
-//        previewLayer.addSublayer(faceRectCALayer)
     }
     
     func mySetupFace(_ faces : Array<CGRect>) {
-//        previewLayer.sublayers = nil
-//        previewLayer.sublayers?.forEach {
-//            $0.removeFromSuperlayer()
-//        }
-//        print("\n")
-//        print(previewLayer.sublayers?.count)
+        //        previewLayer.sublayers = nil
+        //        previewLayer.sublayers?.forEach {
+        //            $0.removeFromSuperlayer()
+        //        }
+        //        print("\n")
+        //        print(previewLayer.sublayers?.count)
         for (idx, e) in (previewLayer.sublayers?.enumerated())! {
             if (idx > 0) {
                 e.removeFromSuperlayer();
@@ -226,20 +196,20 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         
         for metadataObject in metadataObjects as! [AVMetadataObject] {
             if metadataObject.type == AVMetadataObjectTypeFace {
-                    let transformedMetadataObject = previewLayer.transformedMetadataObject(for: metadataObject)
-                    let face = transformedMetadataObject?.bounds
-                    faces.append(face!)
+                let transformedMetadataObject = previewLayer.transformedMetadataObject(for: metadataObject)
+                let face = transformedMetadataObject?.bounds
+                faces.append(face!)
             }
         }
         
         print("FACE",faces)
         
         if faces.count > 0 {
-//            setlayerHidden(false)
+            //            setlayerHidden(false)
             DispatchQueue.main.async(execute: {
                 () -> Void in
                 self.mySetupFace(faces)
-//                self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
+                //                self.faceRectCALayer.frame = self.findMaxFaceRect(faces)
             })
         } else {
             DispatchQueue.main.async(execute: {
@@ -250,15 +220,15 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
                     }
                 }
             })
-//            previewLayer.sublayers = nil;
-//            setlayerHidden(true)
+            //            previewLayer.sublayers = nil;
+            //            setlayerHidden(true)
         }
     }
     
     func setlayerHidden(_ hidden: Bool) {
         if (faceRectCALayer.isHidden != hidden){
             print("hidden:" ,hidden)
-            DispatchQueue.main.async(execute: { 
+            DispatchQueue.main.async(execute: {
                 () -> Void in
                 self.faceRectCALayer.isHidden = hidden
             })
@@ -281,7 +251,7 @@ class FaceViewController: UIViewController,AVCaptureMetadataOutputObjectsDelegat
         return maxFace
     }
     
-
     
-
+    
+    
 }

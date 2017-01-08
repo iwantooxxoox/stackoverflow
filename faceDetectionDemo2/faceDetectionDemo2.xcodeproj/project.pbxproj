@@ -54,9 +54,9 @@
 		C85ADAE61D19E80B00134CF3 /* faceDetectionDemo2 */ = {
 			isa = PBXGroup;
 			children = (
-				C85ADAF91D19E82800134CF3 /* Supporting Files */,
 				C85ADAEB1D19E80B00134CF3 /* Main.storyboard */,
 				C85ADAFA1D19E85300134CF3 /* FaceViewController.swift */,
+				C85ADAF91D19E82800134CF3 /* Supporting Files */,
 			);
 			path = faceDetectionDemo2;
 			sourceTree = "<group>";
